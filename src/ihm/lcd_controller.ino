@@ -1,3 +1,7 @@
+// Lien Tinkercad vers le schéma Arduino permettant de tester le code ci-dessous :
+// https://www.tinkercad.com/things/l8eG69AYHF5 
+
+
 // C++ code
 //
 /*
