@@ -5,7 +5,11 @@
 #define CONTROLH_PIN_1          9
 #define CONTROLH_PIN_2          3
 #define CONTROLH_PIN_7          2
-#define POTENTIOMETRE_PIN       A0              
+#define POTENTIOMETRE_PIN       A0   
+
+#define X_PIN                   A3
+
+#define MODE                    0 //manuel 0, auto 1, bluetooth 2
 
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0; 
@@ -28,7 +32,9 @@ void setup()
   pinMode(CONTROLH_PIN_7, OUTPUT);
   pinMode(CONTROLH_PIN_2, OUTPUT);
   pinMode(CONTROLH_PIN_1, OUTPUT);
+
   pinMode(POTENTIOMETRE_PIN, INPUT);
+  pinMode(X_PIN, INPUT);
 
   // pull the enable pin LOW to start
   digitalWrite(CONTROLH_PIN_1, LOW);
@@ -36,8 +42,28 @@ void setup()
 }
 
 void loop() {
-  // Lecture de la valeur du potentiomètre 
-  int potValue = analogRead(POTENTIOMETRE_PIN);
+
+  int value = 0;
+
+  if(MODE == 0)
+  {
+    // Lecture de la valeur du potentiomètre 
+    value = analogRead(POTENTIOMETRE_PIN);  
+  }
+  else if (MODE == 1) 
+  {
+    value = map(analogRead(X_PIN), 210, 310, 0, 1023);
+
+    //sécurité pour le moteur
+    if(value > 1023)
+    {
+      value = 1023;
+    }
+    else if (value < 0)
+    {
+      value = 0;
+    }
+  }
 
   // Explications motorSpeed
   // - On utilise abs() pour avoir constamment une valeur positive
@@ -47,9 +73,9 @@ void loop() {
   //
   // - Enfin on divise par 2 pour avoir une valeur comprise entre 0 et 255 pour
   //   être dans la plage du moteur.
-  int motorSpeed = (abs(potValue-MILIEU_POTENTIOMETRE))/2;
+  int motorSpeed = (abs(value-MILIEU_POTENTIOMETRE))/2;
 
-  if (potValue <= MILIEU_POTENTIOMETRE) 
+  if (value <= MILIEU_POTENTIOMETRE) 
   {
     //horaire (511->0)
     set_horaire();
@@ -57,6 +83,7 @@ void loop() {
   else 
   { 
     // anti-horaire (512->1023)
+    motorSpeed--;
     set_anti_horaire();
   }
 
@@ -64,8 +91,11 @@ void loop() {
   ulmicroseconds = micros();
   if(ulmicroseconds-ulPrecMicroseconds >= PERIODE_AFFICHAGE)
   {
-    Serial.print("Valeur du potentiomètre : ");
-    Serial.println(potValue);
+    if(MODE == 0)
+      Serial.print("Valeur du potentiomètre : ");
+    else if (MODE == 1)
+      Serial.print("Valeur de l'accéléromètre : ");
+    Serial.println(value);
     Serial.print("speed : ");
     Serial.println(motorSpeed);
 
