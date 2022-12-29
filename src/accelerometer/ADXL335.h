@@ -27,15 +27,15 @@
 
 #include <Arduino.h>
 /*macro definitions of Analog read pins*/
-#define X_AXIS_PIN A0
+#define X_AXIS_PIN A2
 #define Y_AXIS_PIN A1
-#define Z_AXIS_PIN A2
+#define Z_AXIS_PIN A0
 
 #define ADC_AMPLITUDE 1024//amplitude of the 10bit-ADC of Arduino is 1024LSB
-#define ADC_REF	5	//ADC reference is 5v
-#define ZERO_X	1.22 //accleration of X-AXIS is 0g, the voltage of X-AXIS is 1.22v
-#define ZERO_Y	1.22 //
-#define ZERO_Z	1.25 //
+#define ADC_REF	3.3	//ADC reference is 5v
+#define ZERO_X	1.45 //accleration of X-AXIS is 0g, the voltage of X-AXIS is 1.22v
+#define ZERO_Y	1.44 //
+#define ZERO_Z	1.78 //
 #define SENSITIVITY 0.25//sensitivity of X/Y/Z axis is 0.25v/g
 
 class ADXL335
