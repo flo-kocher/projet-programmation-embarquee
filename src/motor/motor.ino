@@ -1,44 +1,66 @@
+//1s entre chaque affichage dans le Serial monitor
 #define PERIODE_AFFICHAGE       1000000  
-
-const int controlPin1 = 2;                // connected to pin 7 on the H-bridge
-const int controlPin2 = 3;                // connected to pin 2 on the H-bridge
-const int enablePin = 9;                  // connected to pin 1 on the H-bridge
-const int potPin = A0;                    // connected to the potentiometer's output
+//1024 valeur => 511 
+#define MILIEU_POTENTIOMETRE    511 
+#define CONTROLH_PIN_1          9
+#define CONTROLH_PIN_2          3
+#define CONTROLH_PIN_7          2
+#define POTENTIOMETRE_PIN       A0              
 
 static unsigned long ulmicroseconds = 0;
-static unsigned long ulPrecMicroseconds = 0;
+static unsigned long ulPrecMicroseconds = 0; 
 
-int motorSpeed = 0;      // speed of the motor
-void setup() {
+void set_horaire()
+{
+  digitalWrite(CONTROLH_PIN_7, LOW);
+  digitalWrite(CONTROLH_PIN_2, HIGH);
+}
+
+void set_anti_horaire()
+{
+  digitalWrite(CONTROLH_PIN_7, HIGH);
+  digitalWrite(CONTROLH_PIN_2, LOW);
+}
+
+void setup()
+{
   // initialize the inputs and outputs
-  pinMode(controlPin1, OUTPUT);
-  pinMode(controlPin2, OUTPUT);
-  pinMode(enablePin, OUTPUT);
-  pinMode(A0, INPUT);
+  pinMode(CONTROLH_PIN_7, OUTPUT);
+  pinMode(CONTROLH_PIN_2, OUTPUT);
+  pinMode(CONTROLH_PIN_1, OUTPUT);
+  pinMode(POTENTIOMETRE_PIN, INPUT);
 
   // pull the enable pin LOW to start
-  digitalWrite(enablePin, LOW);
+  digitalWrite(CONTROLH_PIN_1, LOW);
   Serial.begin(115200); 
 }
 
 void loop() {
+  // Lecture de la valeur du potentiomètre 
+  int potValue = analogRead(POTENTIOMETRE_PIN);
 
-  // read the value of the pot and divide by 4 to get a value that can be
-  // used for PWM
-  int potValue = analogRead(potPin);
-  // change the direction the motor spins by talking to the control pins
-  // on the H-Bridge
-  //en avant
-  if (potValue <= 511) {
-    motorSpeed = (abs(potValue-511))/2;
-    digitalWrite(controlPin1, HIGH);
-    digitalWrite(controlPin2, LOW);
-  } else { //en arrière
-    motorSpeed = (potValue - 511)/2;
-    digitalWrite(controlPin1, LOW);
-    digitalWrite(controlPin2, HIGH);
+  // Explications motorSpeed
+  // - On utilise abs() pour avoir constamment une valeur positive
+  //
+  // - On fait la différence de la valeur du potentiometre par MILIEU_POTENTIOMETRE
+  //   pour avoir d'un côté la plage anti horaire et de l'autre la plage horaire
+  //
+  // - Enfin on divise par 2 pour avoir une valeur comprise entre 0 et 255 pour
+  //   être dans la plage du moteur.
+  int motorSpeed = (abs(potValue-MILIEU_POTENTIOMETRE))/2;
+
+  if (potValue <= MILIEU_POTENTIOMETRE) 
+  {
+    //horaire (511->0)
+    set_horaire();
+  }
+  else 
+  { 
+    // anti-horaire (512->1023)
+    set_anti_horaire();
   }
 
+  //affichage toutes les secondes sur le moniteur série
   ulmicroseconds = micros();
   if(ulmicroseconds-ulPrecMicroseconds >= PERIODE_AFFICHAGE)
   {
@@ -49,6 +71,8 @@ void loop() {
 
     ulPrecMicroseconds = ulmicroseconds;
   }
-  analogWrite(enablePin, motorSpeed);
+
+  // On envoie la vitesse du moteur vers le pont en H 
+  analogWrite(CONTROLH_PIN_1, motorSpeed);
 
 }
