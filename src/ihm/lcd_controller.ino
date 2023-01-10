@@ -1,7 +1,6 @@
 // Lien Tinkercad vers le schéma Arduino permettant de tester le code ci-dessous :
 // https://www.tinkercad.com/things/l8eG69AYHF5?sharecode=dKoCBTEMIGsRdDm6rqgJd6K3AFFeXGwr5NfiHCSPzuQ
 
-
 // C++ code
 //
 /*
@@ -45,19 +44,27 @@
 
 #include <LiquidCrystal.h>
 
-// Initialize LCD Screen
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+#define LCD_RS_PIN 12
+#define LCD_ENABLE_PIN 11
+#define LCD_D4_PIN 5
+#define LCD_D5_PIN 4
+#define LCD_D6_PIN 3
+#define LCD_D7_PIN 2
 
-// Initialize control button pin
-const int controlPin = 6;
+#define CONTROL_PIN 6
+#define INFO_PIN 7
+
+// Initialize LCD Screen
+LiquidCrystal lcd(LCD_RS_PIN, LCD_ENABLE_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
+
+// Initialize control button pin states
 int controlPinState = 0;
 int prevControlPinState = 0;
 // if controlMode == true : automatic mode
 // if controlMode == false : manual mode
 bool controlMode = false;
 
-// Initialize info button pin
-const int infoPin = 7;
+// Initialize info button pin states
 int infoPinState = 0;
 int prevInfoPinState = 0;
 // if infoMode == 0 : show info 1
@@ -65,65 +72,66 @@ int prevInfoPinState = 0;
 // if infoMode == 2 : show info 3
 int infoMode = 0;
 
-
 // Function used to print on the first line of the LCD Screen
 // the current control mode
-void printControlPinLine(){
-  lcd.setCursor(0,0);
-  if(controlMode)
+void printControlPinLine()
+{
+  lcd.setCursor(0, 0);
+  if (controlMode)
     lcd.print("AUTO");
   else
     lcd.print("MAN");
-  
+
   return;
 }
-
 
 // Function used to print on the second line of the LCD Screen
 // the current info mode
-void printInfoPinLine(){
-    lcd.setCursor(0,1);
-    switch(infoMode){
-      case 0:
-      lcd.print("1");
-      break;
-      case 1:
-      lcd.print("2");
-      break;
-      case 2:
-      lcd.print("3");
-      break;
-    }
-    
+void printInfoPinLine()
+{
+  lcd.setCursor(0, 1);
+  switch (infoMode)
+  {
+  case 0:
+    lcd.print("Motor speed");
+    break;
+  case 1:
+    lcd.print("Servomotor angle");
+    break;
+  case 2:
+    lcd.print("Angle X, Angle Y");
+    break;
+  }
+
   return;
 }
 
-
 void setup()
 {
-  //Serial.begin(115200);
-  // Set up the number of columns and rows on the LCD
+  // Serial.begin(115200);
+  //  Set up the number of columns and rows on the LCD
   lcd.begin(16, 2);
   // Initialize the control pin as an INPUT
-  pinMode(controlPin, INPUT);
+  pinMode(CONTROL_PIN, INPUT);
   // Initialize the info pin as an INPUT
-  pinMode(infoPin, INPUT);
-  
+  pinMode(INFO_PIN, INPUT);
+
   // Starting prints of the LCD
   lcd.print("Projet");
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 1);
   lcd.print("super cool");
 }
-
 
 void loop()
 {
   // Read the control button input pin
-  controlPinState = digitalRead(controlPin);
+  controlPinState = digitalRead(CONTROL_PIN);
   // See if there was a change of state
-  if(controlPinState != prevControlPinState){
+  if (controlPinState != prevControlPinState)
+  {
     // If so, see if the current state is in HIGH
-    if(controlPinState == HIGH){
+    if (controlPinState == HIGH)
+    {
       // Clear the entire LCD
       lcd.clear();
       // Switch the state of the controlMode value
@@ -133,18 +141,19 @@ void loop()
       printInfoPinLine();
     }
     // Delay to avoid bouncing
-    delay(50);    
+    delay(50);
   }
   // Save the current state as the last state
   prevControlPinState = controlPinState;
-  
-  
+
   // Read the info button input pin
-  infoPinState = digitalRead(infoPin);
+  infoPinState = digitalRead(INFO_PIN);
   // See if there was a change of state
-  if(infoPinState != prevInfoPinState){
+  if (infoPinState != prevInfoPinState)
+  {
     // If so, see if the current state is in HIGH
-    if(infoPinState == HIGH){
+    if (infoPinState == HIGH)
+    {
       // Clear the entire LCD
       lcd.clear();
       // Increment the infoMode value
@@ -159,5 +168,4 @@ void loop()
   }
   // Save the current state as the last state
   prevInfoPinState = infoPinState;
-  
 }

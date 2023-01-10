@@ -25,13 +25,13 @@
 #define CONTROL_PIN 6
 #define INFO_PIN 7
 
+#define SERVO_PIN 8
+
 Servo myServo;
 int potVal;
 int angle;
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0;
-
-
 
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0;
@@ -47,8 +47,6 @@ void set_anti_horaire()
     digitalWrite(CONTROLH_PIN_7, HIGH);
     digitalWrite(CONTROLH_PIN_2, LOW);
 }
-
-
 
 // Initialize LCD Screen
 LiquidCrystal lcd(LCD_RS_PIN, LCD_ENABLE_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, 2LCD_D7_PIN);
@@ -91,13 +89,13 @@ void printInfoPinLine()
     switch (infoMode)
     {
     case 0:
-        lcd.print("1"); // Moteur speed
+        lcd.print("Motor speed");
         break;
     case 1:
-        lcd.print("2"); // Servomoteur angle
+        lcd.print("Servomotor angle");
         break;
     case 2:
-        lcd.print("3"); // Angle X, Angle Y
+        lcd.print("Angle X, Angle Y");
         break;
     }
 
@@ -107,7 +105,7 @@ void printInfoPinLine()
 void setup()
 {
     // put your setup code here, to run once:
-    myServo.attach(9);
+    myServo.attach(SERVO_PIN);
 
     // Serial.begin(115200);
     // Set up the number of columns and rows on the LCD
