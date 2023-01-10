@@ -1,7 +1,29 @@
-// Servomotor
 #include <Servo.h>
+#include <LiquidCrystal.h>
 
 #define PERIODE_AFFICHAGE 1000000
+
+// 1s entre chaque affichage dans le Serial monitor
+#define PERIODE_AFFICHAGE 1000000
+// 1024 valeur => 511
+#define MILIEU_POTENTIOMETRE 511
+#define CONTROLH_PIN_1 9
+#define CONTROLH_PIN_2 13 // était en 3
+#define CONTROLH_PIN_7 12 // était en 2
+#define POTENTIOMETRE_PIN A0
+
+#define X_PIN A1
+#define Y_PIN A2
+
+#define LCD_RS_PIN 10 // était en 12
+#define LCD_ENABLE_PIN 11
+#define LCD_D4_PIN 5
+#define LCD_D5_PIN 4
+#define LCD_D6_PIN 3
+#define LCD_D7_PIN 2
+
+#define CONTROL_PIN 6
+#define INFO_PIN 7
 
 Servo myServo;
 int potVal;
@@ -9,21 +31,7 @@ int angle;
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0;
 
-// Motor
 
-// 1s entre chaque affichage dans le Serial monitor
-#define PERIODE_AFFICHAGE 1000000
-// 1024 valeur => 511
-#define MILIEU_POTENTIOMETRE 511
-#define CONTROLH_PIN_1 9
-#define CONTROLH_PIN_2 3
-#define CONTROLH_PIN_7 2
-#define POTENTIOMETRE_PIN A0
-
-#define X_PIN A1
-#define Y_PIN A2
-
-#define MODE 0 // manuel 0, auto 1, bluetooth 2
 
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0;
@@ -40,19 +48,7 @@ void set_anti_horaire()
     digitalWrite(CONTROLH_PIN_2, LOW);
 }
 
-// LCD
 
-#include <LiquidCrystal.h>
-
-#define LCD_RS_PIN 12
-#define LCD_ENABLE_PIN 11
-#define LCD_D4_PIN 5
-#define LCD_D5_PIN 4
-#define LCD_D6_PIN 3
-#define LCD_D7_PIN 2
-
-#define CONTROL_PIN 6 // FLEXIBLE
-#define INFO_PIN 7
 
 // Initialize LCD Screen
 LiquidCrystal lcd(LCD_RS_PIN, LCD_ENABLE_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, 2LCD_D7_PIN);
@@ -208,9 +204,9 @@ void loop()
 
     if (ulmicroseconds - ulPrecMicroseconds >= PERIODE_AFFICHAGE)
     {
-        if (MODE == 0)
+        if (!controlMode)
             Serial.print("Valeur du potentiomètre : ");
-        else if (MODE == 1)
+        else if (controlMode)
             Serial.print("Valeur de l'accéléromètre : ");
         Serial.println(value);
         Serial.print("speed : ");
@@ -228,7 +224,6 @@ void loop()
 
     // delay(15); peut être encore utile
 
-    // LCD
     // Read the control button input pin
     controlPinState = digitalRead(CONTROL_PIN);
     // See if there was a change of state
