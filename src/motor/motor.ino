@@ -3,8 +3,8 @@
 //1024 valeur => 511 
 #define MILIEU_POTENTIOMETRE    511 
 #define CONTROLH_PIN_1          9
-#define CONTROLH_PIN_2          3
-#define CONTROLH_PIN_7          2
+#define CONTROLH_PIN_2          13
+#define CONTROLH_PIN_7          12
 #define POTENTIOMETRE_PIN       A0   
 
 #define X_PIN                   A3
@@ -86,6 +86,7 @@ void loop() {
     motorSpeed--;
     set_anti_horaire();
   }
+  int vitesse = map(motorSpeed, 0, 255, 0, 12000);
 
   //affichage toutes les secondes sur le moniteur série
   ulmicroseconds = micros();
@@ -97,7 +98,7 @@ void loop() {
       Serial.print("Valeur de l'accéléromètre : ");
     Serial.println(value);
     Serial.print("speed : ");
-    Serial.println(motorSpeed);
+    Serial.println(vitesse);
 
     ulPrecMicroseconds = ulmicroseconds;
   }

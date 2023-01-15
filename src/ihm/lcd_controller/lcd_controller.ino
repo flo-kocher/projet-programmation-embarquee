@@ -44,12 +44,12 @@
 
 #include <LiquidCrystal.h>
 
-#define LCD_RS_PIN 12
+#define LCD_RS_PIN 10
 #define LCD_ENABLE_PIN 11
-#define LCD_D4_PIN 5
-#define LCD_D5_PIN 4
-#define LCD_D6_PIN 3
-#define LCD_D7_PIN 2
+#define LCD_D4_PIN 2
+#define LCD_D5_PIN 3
+#define LCD_D6_PIN 4
+#define LCD_D7_PIN 5
 
 #define CONTROL_PIN 6
 #define INFO_PIN 7
