@@ -54,8 +54,9 @@
 /*
   Servo moteur
 */
-// Servo myServo;
+Servo myServo;
 int angle;
+int angle_prec;
 
 /*
   ecran lcd
@@ -187,7 +188,7 @@ void setup()
       Servo moteur init
     */
     // put your setup code here, to run once:
-    // myServo.attach(SERVO_PIN);
+    myServo.attach(SERVO_PIN);
 
     /*
       LCD init
@@ -315,9 +316,6 @@ void loop()
 
     // affichage toutes les secondes sur le moniteur série
     angle = map(value_servo, 0, 1023, 0, 180);
-
-    // //écriture de l'angle
-    // myServo.write(angle);
     ///////////////////////////////////////////////////////
 
 
@@ -405,6 +403,21 @@ void loop()
         printControlPinLine();
         printInfoPinLine();
 
+        //servo moteur
+        //contraintes des +- 20° par seconde
+        if(angle < angle_prec-20)
+        {
+          angle = angle_prec-20;
+        }
+        if(angle > angle_prec+20)
+        {
+          angle = angle_prec+20;
+        }
+        angle_prec = angle;
+
+        myServo.write(angle);
+
+        //maj du temps
         ulPrecMicroseconds = ulmicroseconds;
     }
     ///////////////////////////////////////////////////////
