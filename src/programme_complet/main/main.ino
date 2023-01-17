@@ -69,24 +69,23 @@ int angle_prec;
 /*
   ecran lcd
 */
-// Initialize LCD Screen
+// Initialisation de l'écran LCD
 LiquidCrystal lcd(LCD_RS_PIN, LCD_ENABLE_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
 
-// Initialize control button pin
-// const int controlPin = 6;
+// Initialisation du bouton permettant de changer de mode
 int controlPinState = 0;
 int prevControlPinState = 0;
-// if controlMode == true : automatic mode
-// if controlMode == false : manual mode
+// si controlMode == true : mode automatique
+// si controlMode == false : mode manuel
 bool controlMode = false;
 
-// Initialize info button pin
-// const int infoPin = 7;
+// Initialisation du bouton permettant de mettre à jour les 
+// valeurs du servomoteur et du moteur
 int infoPinState = 0;
 int prevInfoPinState = 0;
-// if infoMode == 0 : show info 1
-// if infoMode == 1 : show info 2
-// if infoMode == 2 : show info 3
+// si infoMode == 0 : afficher valeurs moteur
+// si infoMode == 1 : afficher valeurs servomoteur
+// si infoMode == 2 : afficher valeurs angles
 int infoMode = 0;
 
 /*
@@ -141,8 +140,7 @@ void set_anti_horaire()
 /*
   LCD
 */
-// Function used to print on the first line of the LCD Screen
-// the current control mode
+// Fonction utilisé pour afficher sur l'écran LCD le mode de contrôle actuel
 void printControlPinLine()
 {
     lcd.setCursor(0, 0);
@@ -154,8 +152,7 @@ void printControlPinLine()
     return;
 }
 
-// Function used to print on the second line of the LCD Screen
-// the current info mode
+// Fonction utilisé pour afficher sur le LCD les valeurs du moteur et servomoteur actuels
 void printInfoPinLine()
 {
     lcd.setCursor(6, 0);
@@ -208,14 +205,14 @@ void setup()
     /*
       LCD init
     */
-    // Set up the number of columns and rows on the LCD
+    // Set up le nombre de colonnes et lignes sur le LCD
     lcd.begin(16, 2);
-    // Initialize the control pin as an INPUT
+    // Initialisation du control pin en INPUT
     pinMode(CONTROL_PIN, INPUT);
-    // Initialize the info pin as an INPUT
+    // Initialisation du info pin en INPUT
     pinMode(INFO_PIN, INPUT);
 
-    // Starting prints of the LCD
+    // Affichage de départ du LCD
     lcd.print("Projet");
     lcd.setCursor(0, 1);
     lcd.print("super cool");
@@ -346,38 +343,35 @@ void loop()
       LCD
     */
     ///////////////////////////////////////////////////////
-    // Read the control button input pin
+    // Lecture de la valeur du control pin
     controlPinState = digitalRead(CONTROL_PIN);
-    // See if there was a change of state
+    // On regarde s'il y a eu un changement d'état
     if (controlPinState != prevControlPinState)
     {
-        // If so, see if the current state is in HIGH
+        // Si oui, regarder si ce changement d'état est HIGH
         if (controlPinState == HIGH)
-        {
-            // Clear the entire LCD
-            
-            // Switch the state of the controlMode value
+        {            
+            // On change le mode de contrôle
             controlMode = !controlMode;          
         }
     }
-    // Save the current state as the last state
+    // On enregistre l'état actuel comme étant l'ancien
     prevControlPinState = controlPinState;
 
-    // Read the info button input pin
+    // Lecture de la valeur de l'info pin
     infoPinState = digitalRead(INFO_PIN);
-    // See if there was a change of state
+    // On regarde s'il y a eu un changement d'état
     if (infoPinState != prevInfoPinState)
     {
-        // If so, see if the current state is in HIGH
+        // Si oui, regarder si ce changement d'état est HIGH
         if (infoPinState == HIGH)
         {
-            // Increment the infoMode value
+            // Incrémentation de la valeur infoMode
             infoMode++;
             infoMode %= 3;           
         }
-        // Delay to avoid bouncing
     }
-    // Save the current state as the last state
+    // Le nouvel état devient l'ancien état
     prevInfoPinState = infoPinState;
     ///////////////////////////////////////////////////////
 
@@ -418,7 +412,7 @@ void loop()
 
         //lcd
         lcd.clear();
-        // Print the 2 lines of LCD
+        // On met à jour les 2 lignes du LCD
         printControlPinLine();
         printInfoPinLine();
 
