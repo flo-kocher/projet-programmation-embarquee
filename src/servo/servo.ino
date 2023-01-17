@@ -3,6 +3,7 @@
 #define PERIODE_AFFICHAGE       1000000  
 #define POT_PIN                 A0
 #define SERVO_PIN               8
+#define Y_PIN A2
 
 Servo myServo;
 int pot_val;
@@ -10,11 +11,12 @@ int angle;
 int angle_prec;
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0;
+bool controlMode = false;
 
 //Initialisation
 void setup() {
 	myServo.attach(SERVO_PIN);  
-	Serial.begin(9600);
+	Serial.begin(115200);
 }
 
 void loop() {
@@ -23,6 +25,7 @@ void loop() {
 	// Conversion de la valeur du potentiomètre en une mesure d'angle
 	angle=map(pot_val, 0, 1023, 0, 180);
 	
+	// Code pour l'accéléromètre
 	// int temp_servo = 0;
 	// int value_servo = 0;
 	// if (controlMode)
@@ -52,21 +55,19 @@ void loop() {
 		Serial.print("Angle : ");
 		Serial.println(angle);
 
+		//contraintes des +- 20° par seconde
+		if(angle < angle_prec-20)
+		{
+			angle = angle_prec-20;
+		}
+		if(angle > angle_prec+20)
+		{
+			angle = angle_prec+20;
+		}
+		angle_prec = angle;
+
+		// Transmission de l'angle au servomoteur
+		myServo.write(angle);
 		ulPrecMicroseconds = ulmicroseconds;
 	}
-
- 	//contraintes des +- 20° par seconde
-	if(angle < angle_prec-20)
-	{
-		angle = angle_prec-20;
-	}
-	if(angle > angle_prec+20)
-	{
-		angle = angle_prec+20;
-	}
-	angle_prec = angle;
-
-	// Transmission de l'angle au servomoteur
-	myServo.write(angle);
-	delay(15);
 }
