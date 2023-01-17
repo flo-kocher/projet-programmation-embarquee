@@ -342,9 +342,6 @@ void loop()
 
 
 
-
-    // delay(15); peut être encore utile
-
     /*
       LCD
     */
