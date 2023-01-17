@@ -1,25 +1,45 @@
+//Fichier BRARD Thibault
+// Tâches : 
+//    - Moteur
+//    - Merge
+//    - Montage final
+//    - Debug du main
+
 //1s entre chaque affichage dans le Serial monitor
 #define PERIODE_AFFICHAGE       1000000  
+
 //1024 valeur => 511 
 #define MILIEU_POTENTIOMETRE    511 
+
+//gère la pwm
 #define CONTROLH_PIN_1          9
+
+//controle le sens horaire
 #define CONTROLH_PIN_2          13
-#define CONTROLH_PIN_7          12
+
+//controle le sens anti-horaire
+#define CONTROLH_PIN_7          12 
+
+//pin analogique du potentiomètre
 #define POTENTIOMETRE_PIN       A0   
 
-#define X_PIN                   A3
+//pin analogique de l'axe X de l'accelerometre
+#define X_PIN                   A1
 
-#define MODE                    0 //manuel 0, auto 1, bluetooth 2
+//manuel 0, auto 1, bluetooth 2
+#define MODE                    1 
 
 static unsigned long ulmicroseconds = 0;
 static unsigned long ulPrecMicroseconds = 0; 
 
+//met le sens horaire du moteur
 void set_horaire()
 {
   digitalWrite(CONTROLH_PIN_7, LOW);
   digitalWrite(CONTROLH_PIN_2, HIGH);
 }
 
+//met le sens anti-horaire du moteur
 void set_anti_horaire()
 {
   digitalWrite(CONTROLH_PIN_7, HIGH);
@@ -43,7 +63,15 @@ void setup()
 
 void loop() {
 
+  //stocke la valeur de l'axe X temporairement
+  int temp_moteur = 0;
+
+  //stocke la valeur qui sera convertit pour la vitesse du moteur
   int value = 0;
+  char symb = '+';
+
+  //valeur de l'axe sur X
+  int angleX = 0;
 
   if(MODE == 0)
   {
@@ -52,9 +80,17 @@ void loop() {
   }
   else if (MODE == 1) 
   {
-    value = map(analogRead(X_PIN), 210, 310, 0, 1023);
+    //lecture de la valeur de l'accelerometre
+    temp_moteur = analogRead(X_PIN);
 
-    //sécurité pour le moteur
+    //conversion en valeur d'un potentiometre
+    value = map(temp_moteur, 210, 310, 0, 1023);
+
+    //conversion en valeur d'un angle
+    angleX = map(temp_moteur, 210, 310, 0, 360);
+
+    //sécurité pour le moteur car l'accelerometre 
+    //peut avoir des valeurs fluctuantes en fonction du bon branchement de VCC
     if(value > 1023)
     {
       value = 1023;
@@ -83,10 +119,15 @@ void loop() {
   else 
   { 
     // anti-horaire (512->1023)
+    symb = '-';
     motorSpeed--;
     set_anti_horaire();
   }
-  int vitesse = map(motorSpeed, 0, 255, 0, 12000);
+
+  //variable contenant la vitesse du moteur 
+  //12000 car c'est la vitesse max du moteur dans le datasheet
+  // vitesse calculée faute d'avoir eu le montage pour la capturer
+  int vitesse = map(motorSpeed, 0, 255, 0, 12000); 
 
   //affichage toutes les secondes sur le moniteur série
   ulmicroseconds = micros();
@@ -98,7 +139,11 @@ void loop() {
       Serial.print("Valeur de l'accéléromètre : ");
     Serial.println(value);
     Serial.print("speed : ");
-    Serial.println(vitesse);
+    Serial.print(symb);
+    Serial.print(vitesse);
+    Serial.println(" tr/min");
+    Serial.print("acc : X = ");
+    Serial.println(temp_moteur);
 
     ulPrecMicroseconds = ulmicroseconds;
   }
