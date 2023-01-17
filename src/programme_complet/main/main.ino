@@ -1,6 +1,10 @@
 #include <Servo.h>
 #include <LiquidCrystal.h>
 
+#include <SoftwareSerial.h>
+
+//on inclut la bibliothèque SoftwareSerial qui permet la communication entre les pin digital de la carte arduino
+
 
 /*
   Constantes
@@ -49,6 +53,12 @@
 #define SERVO_PIN 8
 
 /*
+  Bluetooth
+*/
+#define rxPin 0
+#define txPin 1
+
+/*
   Constante globale
 */
 // 1s entre chaque affichage dans le Serial monitor
@@ -80,6 +90,8 @@ int prevControlPinState = 0;
 // if controlMode == false : manual mode
 bool controlMode = false;
 
+bool bluetooth_actif = false;
+
 // Initialize info button pin
 // const int infoPin = 7;
 int infoPinState = 0;
@@ -106,6 +118,19 @@ int value = 0;
 */
 int angleX = 0;
 int angleY = 0;
+
+/*
+  bluetooth
+*/
+SoftwareSerial mySerial(rxPin, txPin); //on assigne les pin
+String a1;
+String a2;
+
+int bAnglex;
+int bAngley;
+
+static unsigned long lectureBluetooth = 0;
+static unsigned long lectureBluetoothprec = 0;
 
 /*
   General
@@ -147,7 +172,17 @@ void printControlPinLine()
 {
     lcd.setCursor(0, 0);
     if (controlMode)
-        lcd.print("AUTO");
+    {
+        if(bluetooth_actif)
+        {
+            lcd.print("DIST");
+        }
+        else
+        {
+            lcd.print("AUTO");
+        }
+        
+    }
     else
         lcd.print("MAN");
 
@@ -195,6 +230,37 @@ void printInfoPinLine()
 
     return;
 }
+
+/*
+  Bluetooth
+*/
+void read()
+{
+  a1 = "";
+  a2 = "";
+  bool next = false;
+  while (Serial.available())
+  {
+    if(Serial.available() >0)
+    {
+      char c = Serial.read();
+      if(c == ',')
+      {
+        next = true;
+      }
+      else if(next)
+      {
+        a2 += c;
+      }
+      else
+      {
+        a1+=c;
+      }
+      
+    }
+  }
+}
+
 ///////////////////////////////////////////////////////////
 
 void setup()
@@ -203,7 +269,7 @@ void setup()
       Servo moteur init
     */
     // put your setup code here, to run once:
-    myServo.attach(SERVO_PIN);
+    // myServo.attach(SERVO_PIN);
 
     /*
       LCD init
@@ -238,11 +304,45 @@ void setup()
 
     // pull the enable pin LOW to start
     digitalWrite(CONTROLH_PIN_1, LOW);
-    Serial.begin(115200);
+
+    // On ouvre le port pour les communications:
+    Serial.begin(9600);
+    while (!Serial) {
+      ; // on attend qu'il se connecte. nécessaire pour les ports usb natifs seulement.
+    }
+    // on assigne le port pour mySerial également.
+    mySerial.begin(38400);
 }
 
 void loop()
 {
+
+    /*
+      bluetooth
+    */
+    if(controlMode)
+    {
+        lectureBluetooth = micros();
+        if(lectureBluetooth- lectureBluetoothprec >= (PERIODE_AFFICHAGE/4))
+        {
+          read();
+          if (mySerial.available())
+          {
+            if(a1 != "" )
+            {
+              bluetooth_actif = true;
+              bAnglex = a1.toInt();
+            }
+            if(a2 != "")
+            {
+              bluetooth_actif = true;
+              bAngley = a2.toInt();
+            }
+          }
+          lectureBluetoothprec = lectureBluetooth;
+        }
+    }
+
     /*
       accelerometre
     */
@@ -266,13 +366,20 @@ void loop()
     else if (controlMode)
     {
         //lecture de la valeur de l'accelerometre
-        temp_moteur = analogRead(X_PIN);
+        if (bluetooth_actif)
+        {
+            value = map(bAnglex, -180, 180, 0, 1023);
+            angleX = bAnglex;
+        }
+        else
+        {
+            temp_moteur = analogRead(X_PIN);
+            //conversion en valeur d'un potentiometre
+            value = map(temp_moteur, 210, 310, 0, 1023);
+            //conversion en valeur d'un angle
+            angleX = map(temp_moteur, 210, 310, 0, 360);
+        }
 
-        //conversion en valeur d'un potentiometre
-        value = map(temp_moteur, 210, 310, 0, 1023);
-
-        //conversion en valeur d'un angle
-        angleX = map(temp_moteur, 210, 310, 0, 360);
 
         // sécurité pour le moteur
         if (value > 1023)
@@ -283,6 +390,8 @@ void loop()
         {
             value = 0;
         }
+        
+
     }
 
     // Explications motorSpeed
@@ -319,12 +428,20 @@ void loop()
     */
     ///////////////////////////////////////////////////////
     int value_servo = value;
-    //Pour le servo moteur 
+    // //Pour le servo moteur 
     if (controlMode)
     {
-        temp_servo = analogRead(Y_PIN);
-        value_servo = map(temp_servo, 210, 310, 0, 1023);
-        angleY = map(temp_servo, 210, 310, 0, 360);
+        if (bluetooth_actif)
+        {
+            value = map(bAnglex, -180, 180, 0, 1023);
+            angleY = bAngley;
+        }
+        else
+        {
+            temp_servo = analogRead(Y_PIN);
+            value_servo = map(temp_servo, 210, 310, 0, 1023);
+            angleY = map(temp_servo, 210, 310, 0, 360);
+        }
         // sécurité pour le moteur
         if (value_servo > 1023)
         {
@@ -336,7 +453,7 @@ void loop()
         }
     }
 
-    // affichage toutes les secondes sur le moniteur série
+    // // affichage toutes les secondes sur le moniteur série
     angle = map(value_servo, 0, 1023, 0, 180);
     ///////////////////////////////////////////////////////
 
@@ -437,10 +554,11 @@ void loop()
         }
         angle_prec = angle;
 
-        myServo.write(angle);
+        // myServo.write(angle);
 
         //maj du temps
         ulPrecMicroseconds = ulmicroseconds;
+        bluetooth_actif = false;
     }
     ///////////////////////////////////////////////////////
 }
