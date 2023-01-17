@@ -9,12 +9,20 @@
 /*
   Constantes moteur
 */
-// 1024 valeur => 511
-#define MILIEU_POTENTIOMETRE 511
-#define CONTROLH_PIN_1 9
-#define CONTROLH_PIN_2 13 // était en 3
-#define CONTROLH_PIN_7 12 // était en 2
-#define POTENTIOMETRE_PIN A0
+//1024 valeur => 511 
+#define MILIEU_POTENTIOMETRE    511 
+
+//gère la pwm
+#define CONTROLH_PIN_1          9
+
+//controle le sens horaire
+#define CONTROLH_PIN_2          13
+
+//controle le sens anti-horaire
+#define CONTROLH_PIN_7          12 
+
+//pin analogique du potentiomètre
+#define POTENTIOMETRE_PIN       A0   
 
 /*
   Constantes accelerometre
@@ -84,8 +92,13 @@ int infoMode = 0;
 /*
   moteur
 */
+//variable contenant la vitesse du moteur
 long vitesse = 0;
+
+//variable contenant le sens de rotation du moteur
 char symb = '+';
+
+//valeur récupérée d'une entrée (pot, accelerometre, …)
 int value = 0;
 
 /*
@@ -110,12 +123,14 @@ static unsigned long ulPrecMicroseconds = 0;
 /*
   Moteur
 */
+//met le sens horaire du moteur
 void set_horaire()
 {
     digitalWrite(CONTROLH_PIN_7, LOW);
     digitalWrite(CONTROLH_PIN_2, HIGH);
 }
 
+//met le sens anti-horaire du moteur
 void set_anti_horaire()
 {
     digitalWrite(CONTROLH_PIN_7, HIGH);
@@ -232,6 +247,8 @@ void loop()
       accelerometre
     */
     int temp_servo = 0;
+
+    //stocke la valeur de l'axe X temporairement
     int temp_moteur = 0;
 
     /*
@@ -248,8 +265,13 @@ void loop()
     }
     else if (controlMode)
     {
+        //lecture de la valeur de l'accelerometre
         temp_moteur = analogRead(X_PIN);
+
+        //conversion en valeur d'un potentiometre
         value = map(temp_moteur, 210, 310, 0, 1023);
+
+        //conversion en valeur d'un angle
         angleX = map(temp_moteur, 210, 310, 0, 360);
 
         // sécurité pour le moteur
@@ -393,7 +415,7 @@ void loop()
         //debug accelerometre
         Serial.print("acc : X = ");
         Serial.print(temp_moteur);
-        Serial.print("Y = ");
+        Serial.print(" Y = ");
         Serial.println(temp_servo);
         
 
