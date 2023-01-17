@@ -72,6 +72,12 @@ int prevInfoPinState = 0;
 // if infoMode == 2 : show info 3
 int infoMode = 0;
 
+// global values that will be printed on the LCD
+int speed = 0;
+int angle = 90;
+int angleX = 40;
+int angleY = 20;
+
 // Function used to print on the first line of the LCD Screen
 // the current control mode
 void printControlPinLine()
@@ -81,29 +87,48 @@ void printControlPinLine()
     lcd.print("AUTO");
   else
     lcd.print("MAN");
-
   return;
 }
 
-// Function used to print on the second line of the LCD Screen
-// the current info mode
+// Function used to print the current info mode on the LCD
+// with the current values
 void printInfoPinLine()
 {
-  lcd.setCursor(0, 1);
-  switch (infoMode)
-  {
-  case 0:
-    lcd.print("Motor speed");
-    break;
-  case 1:
-    lcd.print("Servomotor angle");
-    break;
-  case 2:
-    lcd.print("Angle X, Angle Y");
-    break;
-  }
+    lcd.setCursor(6, 0);
+    switch (infoMode)
+    {
+    case 0:     
+        lcd.print("- Motor");
+        lcd.setCursor(0, 1);
+        lcd.print(speed);
+        lcd.print(" tr/min");
+        break;
+    case 1:
+        lcd.print("- Servo");
+        lcd.setCursor(0, 1);
+        lcd.print(angle);
+        lcd.print(" degres");
+        break;
+    case 2:
+        if(controlMode)
+        {
+            lcd.print("Angle X, Y");
+            lcd.setCursor(0, 1);
+            lcd.print("(");
+            lcd.print(angleX);
+            lcd.print(",");
+            lcd.print(angleY);
+            lcd.print(")");
+        }
+        else
+        {
+            infoMode++;
+            infoMode %= 3;  
+        }
+        break;
+    }
 
-  return;
+    return;
 }
 
 void setup()
@@ -124,6 +149,12 @@ void setup()
 
 void loop()
 {
+  // I increase the value of speed to simulate a value change
+  speed += 1 ;
+  speed %= 100;
+  // Then I update the LCD with my new value
+  printInfoPinLine();
+
   // Read the control button input pin
   controlPinState = digitalRead(CONTROL_PIN);
   // See if there was a change of state
